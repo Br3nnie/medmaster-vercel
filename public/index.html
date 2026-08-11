@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MedMaster">
+<title>MedMaster</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --green:#1D9E75; --green-light:#E1F5EE; --green-mid:#0F6E56;
+  --amber:#EF9F27; --amber-light:#FAEEDA;
+  --blue:#378ADD; --blue-light:#E6F1FB;
+  --red:#E24B4A; --red-light:#FCEBEB; --red-mid:#A32D2D;
+  --bg:#F8F7F4; --surface:#FFFFFF; --surface2:#F1EFE8;
+  --border:rgba(0,0,0,0.09); --border-strong:rgba(0,0,0,0.18);
+  --text:#1a1a18; --text2:#5F5E5A; --text3:#888780;
+  --r:12px; --rs:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a18; --surface:#2C2C2A; --surface2:#444441;
+    --border:rgba(255,255,255,0.09); --border-strong:rgba(255,255,255,0.18);
+    --text:#F1EFE8; --text2:#B4B2A9; --text3:#888780;
+    --green-light:#04342C; --green:#5DCAA5; --green-mid:#9FE1CB;
+    --amber-light:#412402; --blue-light:#042C53;
+    --red-light:#501313; --red-mid:#F09595;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.app{max-width:480px;margin:0 auto;padding:0 0 120px;}
+
+.hdr{padding:20px 20px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+.hdr-left h1{font-size:22px;font-weight:700;letter-spacing:-0.5px;}
+.hdr-left h1 span{color:var(--green);}
+.hdr-left p{font-size:12px;color:var(--text3);margin-top:3px;}
+.day-badge{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);padding:6px 12px;font-size:11px;color:var(--text2);font-weight:600;white-space:nowrap;}
+
+.ctx-strip{display:flex;gap:8px;padding:14px 20px 0;}
+.ctx-group{flex:1;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;}
+.ctx-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px;}
+.pills{display:flex;flex-wrap:wrap;gap:4px;}
+.pill{font-size:11px;padding:5px 10px;border-radius:20px;border:0.5px solid var(--border-strong);cursor:pointer;color:var(--text2);background:var(--bg);font-weight:500;transition:all .15s;user-select:none;}
+.pill.on{background:var(--green);border-color:var(--green);color:#fff;}
+
+.ibanner{margin:14px 20px 0;background:var(--red-light);border-radius:var(--rs);padding:10px 14px;cursor:pointer;}
+.ibanner-hdr{display:flex;justify-content:space-between;align-items:center;}
+.ibanner-title{font-size:11px;font-weight:600;color:var(--red-mid);display:flex;align-items:center;gap:5px;}
+.itags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+.itag{font-size:10px;padding:2px 7px;border-radius:10px;background:rgba(226,75,74,.15);color:var(--red-mid);font-weight:500;}
+
+.sec-lbl{padding:18px 20px 10px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+
+.meals{padding:0 20px;display:flex;flex-direction:column;gap:10px;}
+.mcard{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .15s;}
+.mcard.open{border-color:var(--green);}
+.mcard-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none;}
+.micon{width:38px;height:38px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.micon i{font-size:18px;color:var(--green);}
+.minfo{flex:1;min-width:0;}
+.minfo-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.mname{font-size:14px;font-weight:600;}
+.mtime{font-size:11px;color:var(--text3);white-space:nowrap;}
+.mtarget{font-size:11px;color:var(--green);margin-top:2px;font-weight:500;}
+.mcaret{color:var(--text3);font-size:16px;flex-shrink:0;transition:transform .2s;}
+.mcard.open .mcaret{transform:rotate(180deg);}
+
+.mbody{display:none;border-top:0.5px solid var(--border);padding:14px 16px;}
+.mcard.open .mbody{display:block;}
+
+.snack-timing{margin-bottom:12px;}
+
+.gen-btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:-0.2px;}
+.gen-btn:active{opacity:.8;}
+
+.skel{display:none;flex-direction:column;gap:8px;padding:4px 0 12px;}
+.sk{height:11px;border-radius:4px;background:var(--surface2);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.res{display:none;}
+.res-name{font-size:15px;font-weight:600;margin-bottom:10px;}
+.mchips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.mchip{font-size:11px;padding:4px 9px;border-radius:10px;font-weight:600;}
+.cp{background:var(--green-light);color:var(--green-mid);}
+.cc{background:var(--blue-light);color:var(--blue);}
+.cf{background:var(--amber-light);color:var(--amber);}
+.ck{background:var(--surface2);color:var(--text2);}
+.ftable{width:100%;border-collapse:collapse;margin-bottom:12px;}
+.ftable tr{border-bottom:0.5px solid var(--border);}
+.ftable tr:last-child{border-bottom:none;}
+.ftable td{padding:7px 0;font-size:13px;vertical-align:top;}
+.ftable td:last-child{text-align:right;color:var(--text2);font-size:12px;padding-left:8px;}
+.flags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.flag{font-size:10px;padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:3px;font-weight:500;}
+.fok{background:var(--green-light);color:var(--green-mid);}
+.fwarn{background:var(--red-light);color:var(--red-mid);}
+.prep{font-size:12px;color:var(--text2);line-height:1.6;padding:10px 0 0;border-top:0.5px solid var(--border);}
+.act-row{display:flex;gap:8px;margin-top:12px;}
+.act-btn{flex:1;padding:9px;border:0.5px solid var(--border-strong);border-radius:var(--rs);background:var(--surface2);font-size:12px;font-weight:500;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;gap:5px;}
+.act-btn:active{opacity:.7;}
+
+.err-msg{font-size:13px;color:var(--red-mid);padding:8px 0 12px;display:none;}
+
+.sumbar{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:0.5px solid var(--border);padding:12px 20px 28px;}
+.sum-inner{max-width:480px;margin:0 auto;}
+.sum-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.sum-macros{display:flex;gap:10px;}
+.sum-item{flex:1;text-align:center;}
+.sum-val{font-size:17px;font-weight:700;}
+.sum-sub{font-size:10px;color:var(--text3);margin-top:1px;}
+.bar-wrap{height:3px;background:var(--surface2);border-radius:2px;margin-top:4px;}
+.bar{height:3px;border-radius:2px;transition:width .4s;}
+.bp{background:var(--green);}
+.bc{background:var(--blue);}
+.bf{background:var(--amber);}
+.over{color:var(--red)!important;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div class="hdr-left">
+      <h1><span>Med</span>Master</h1>
+      <p id="dateline"></p>
+    </div>
+    <div class="day-badge" id="daybadge"></div>
+  </div>
+
+  <div class="ctx-strip">
+    <div class="ctx-group">
+      <div class="ctx-lbl">Training</div>
+      <div class="pills" id="tp">
+        <span class="pill on" data-v="endurance">Endurance</span>
+        <span class="pill" data-v="strength">Strength</span>
+        <span class="pill" data-v="both">Both</span>
+        <span class="pill" data-v="rest">Rest</span>
+      </div>
+    </div>
+    <div class="ctx-group">
+      <div class="ctx-lbl">Location</div>
+      <div class="pills" id="lp">
+        <span class="pill on" data-v="home">Home</span>
+        <span class="pill" data-v="travel">Travel</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ibanner" id="ibanner">
+    <div class="ibanner-hdr">
+      <div class="ibanner-title"><i class="ti ti-shield-check"></i>17 foods excluded — tap to view</div>
+      <i class="ti ti-chevron-down" id="ichev"></i>
+    </div>
+    <div class="itags" id="itags" style="display:none">
+      <span class="itag">Cow's milk</span><span class="itag">Casein</span>
+      <span class="itag">Egg white</span><span class="itag">Almond</span>
+      <span class="itag">Soya</span><span class="itag">Gluten</span>
+      <span class="itag">Hazelnut</span><span class="itag">Flax seed</span>
+      <span class="itag">Cashew</span><span class="itag">Pistachio</span>
+      <span class="itag">Brazil nut</span><span class="itag">Peanut</span>
+      <span class="itag">Goat milk</span><span class="itag">Sheep milk</span>
+      <span class="itag">Baker's yeast</span><span class="itag">Brewer's yeast</span>
+      <span class="itag">Wheat/Barley/Rye/Spelt</span>
+    </div>
+  </div>
+
+  <div class="sec-lbl">Today's meals</div>
+
+  <div class="meals">
+
+    <div class="mcard open" id="c-m1">
+      <div class="mcard-hdr" id="hdr-m1">
+        <div class="micon"><i class="ti ti-sun"></i></div>
+        <div class="minfo">
+          <div class="minfo-top"><span class="mname">Breakfast</span><span class="mtime">10:00</span></div>
+          <div class="mtarget">50–55g protein</div>
+        </div>
+        <i class="ti ti-chevron-down mcaret"></i>
+      </div>
+      <div class="mbody">
+        <div class="skel" id="sk-m1">
+          <div class="sk" style="width:55%"></div><div class="sk" style="width:88%"></div>
+          <div class="sk" style="width:70%"></div><div class="sk" style="width:82%"></div>
+        </div>
+        <div class="err-msg" id="err-m1"></div>
+        <div class="res" id="res-m1"></div>
+        <button class="gen-btn" id="btn-m1"><i class="ti ti-sparkles"></i>Generate breakfast</button>
+      </div>
+    </div>
+
+    <div class="mcard" id="c-m2">
+      <div class="mcard-hdr" id="hdr-m2">
+        <div class="micon"><i class="ti ti-apple"></i></div>
+        <div class="minfo">
+          <div class="minfo-top"><span class="mname">Snack</span><span class="mtime">Variable</span></div>
+          <div class="mtarget">20–25g protein</div>
+        </div>
+        <i class="ti ti-chevron-down mcaret"></i>
+      </div>
+      <div class="mbody">
+        <div class="snack-timing">
+          <div class="ctx-lbl">When</div>
+          <div class="pills" id="sp">
+            <span class="pill on" data-v="11:30">11:30</span>
+            <span class="pill" data-v="12:30">12:30</span>
+            <span class="pill" data-v="post-training">Post-training</span>
+            <span class="pill" data-v="flexible">Flexible</span>
+          </div>
+        </div>
+        <div class="skel" id="sk-m2">
+          <div class="sk" style="width:55%"></div><div class="sk" style="width:88%"></div>
+          <div class="sk" style="width:70%"></div>
+        </div>
+        <div class="err-msg" id="err-m2"></div>
+        <div class="res" id="res-m2"></div>
+        <button class="gen-btn" id="btn-m2"><i class="ti ti-sparkles"></i>Generate snack</button>
+      </div>
+    </div>
+
+    <div class="mcard" id="c-m3">
+      <div class="mcard-hdr" id="hdr-m3">
+        <div class="micon"><i class="ti ti-flame"></i></div>
+        <div class="minfo">
+          <div class="minfo-top"><span class="mname">Lunch</span><span class="mtime">13:00–14:00</span></div>
+          <div class="mtarget">50–55g protein</div>
+        </div>
+        <i class="ti ti-chevron-down mcaret"></i>
+      </div>
+      <div class="mbody">
+        <div class="skel" id="sk-m3">
+          <div class="sk" style="width:55%"></div><div class="sk" style="width:88%"></div>
+          <div class="sk" style="width:70%"></div><div class="sk" style="width:82%"></div>
+        </div>
+        <div class="err-msg" id="err-m3"></div>
+        <div class="res" id="res-m3"></div>
+        <button class="gen-btn" id="btn-m3"><i class="ti ti-sparkles"></i>Generate lunch</button>
+      </div>
+    </div>
+
+    <div class="mcard" id="c-m4">
+      <div class="mcard-hdr" id="hdr-m4">
+        <div class="micon"><i class="ti ti-moon"></i></div>
+        <div class="minfo">
+          <div class="minfo-top"><span class="mname">Dinner</span><span class="mtime">18:00–19:00</span></div>
+          <div class="mtarget">45–50g protein</div>
+        </div>
+        <i class="ti ti-chevron-down mcaret"></i>
+      </div>
+      <div class="mbody">
+        <div class="skel" id="sk-m4">
+          <div class="sk" style="width:55%"></div><div class="sk" style="width:88%"></div>
+          <div class="sk" style="width:70%"></div><div class="sk" style="width:82%"></div>
+        </div>
+        <div class="err-msg" id="err-m4"></div>
+        <div class="res" id="res-m4"></div>
+        <button class="gen-btn" id="btn-m4"><i class="ti ti-sparkles"></i>Generate dinner</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="sumbar">
+  <div class="sum-inner">
+    <div class="sum-lbl">Daily totals</div>
+    <div class="sum-macros">
+      <div class="sum-item">
+        <div class="sum-val" id="sv-k" style="color:var(--text2)">0</div>
+        <div class="sum-sub">kcal</div>
+        <div class="bar-wrap" style="visibility:hidden"><div class="bar" style="width:0%"></div></div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-val" id="sv-p" style="color:var(--green)">0g</div>
+        <div class="sum-sub">of 170g protein</div>
+        <div class="bar-wrap"><div class="bar bp" id="bar-p" style="width:0%"></div></div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-val" id="sv-c" style="color:var(--blue)">0g</div>
+        <div class="sum-sub">carbs</div>
+        <div class="bar-wrap"><div class="bar bc" id="bar-c" style="width:0%"></div></div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-val" id="sv-f" style="color:var(--amber)">0g</div>
+        <div class="sum-sub">fat</div>
+        <div class="bar-wrap"><div class="bar bf" id="bar-f" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var state = {
+    training: 'endurance',
+    loc: 'home',
+    snack: '11:30',
+    intolOpen: false,
+    totals: { m1: null, m2: null, m3: null, m4: null }
+  };
+
+  var MEALS = {
+    m1: { label: 'Breakfast (10:00)', slot: 'breakfast at 10:00, the first meal of the day', protein: '50-55' },
+    m2: { label: 'Snack', slot: 'mid-day snack', protein: '20-25' },
+    m3: { label: 'Lunch (13:00-14:00)', slot: 'lunch between 13:00 and 14:00', protein: '50-55' },
+    m4: { label: 'Dinner (18:00-19:00)', slot: 'dinner between 18:00 and 19:00, the last meal closing the feeding window', protein: '45-50' }
+  };
+
+  // Date display
+  var now = new Date();
+  var dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dateStr = dayNames[now.getDay()] + ', ' + now.getDate() + ' ' + monthNames[now.getMonth()] + ' ' + now.getFullYear();
+  document.getElementById('dateline').textContent = dateStr;
+  document.getElementById('daybadge').textContent = dayNames[now.getDay()];
+
+  // Pill group binding
+  function bindPills(groupId, setter) {
+    var el = document.getElementById(groupId);
+    if (!el) return;
+    el.addEventListener('click', function (e) {
+      var p = e.target.closest ? e.target.closest('.pill') : null;
+      if (!p || !el.contains(p)) return;
+      el.querySelectorAll('.pill').forEach(function (x) { x.classList.remove('on'); });
+      p.classList.add('on');
+      setter(p.getAttribute('data-v'));
+    });
+  }
+
+  bindPills('tp', function (v) { state.training = v; });
+  bindPills('lp', function (v) { state.loc = v; });
+  bindPills('sp', function (v) { state.snack = v; });
+
+  // Intolerance banner
+  document.getElementById('ibanner').addEventListener('click', function () {
+    state.intolOpen = !state.intolOpen;
+    document.getElementById('itags').style.display = state.intolOpen ? 'flex' : 'none';
+    document.getElementById('ichev').className = state.intolOpen ? 'ti ti-chevron-up' : 'ti ti-chevron-down';
+  });
+
+  // Meal card headers
+  ['m1','m2','m3','m4'].forEach(function (id) {
+    var hdr = document.getElementById('hdr-' + id);
+    if (hdr) {
+      hdr.addEventListener('click', function () {
+        document.getElementById('c-' + id).classList.toggle('open');
+      });
+    }
+    var btn = document.getElementById('btn-' + id);
+    if (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        generateMeal(id);
+      });
+    }
+  });
+
+  function buildPrompt(id, calCeiling) {
+    var m = MEALS[id];
+    var tNote = state.loc === 'travel'
+      ? 'Brendan is TRAVELLING. Portable or restaurant-orderable options only. No batch cooking.'
+      : 'Brendan is AT HOME with full kitchen access. Batch-cook friendly preferred.';
+    var trMap = {
+      endurance: 'ENDURANCE day. Prioritise low-GI carbohydrates. Include glycogen replenishment guidance.',
+      strength:  'STRENGTH day. Leucine-rich whole foods, even protein distribution, moderate carbs.',
+      both:      'ENDURANCE + STRENGTH day. Full 170g protein target AND adequate low-GI carbohydrates.',
+      rest:      'REST day. Maintain protein. Slightly reduce carbs. Anti-inflammatory gut-support focus.'
+    };
+    var snackLine = (id === 'm2') ? ('Snack timing: ' + state.snack + '.') : '';
+
+    return [
+      'You are MedMaster, a Mediterranean performance nutrition coach for Brendan Ellis (Ironman/ultra-marathon athlete).',
+      '',
+      'RECIPE INSPIRATION — use these as structural and flavour inspiration, adapting to remove any banned ingredients:',
+      '- Cajun Chicken Kebabs: chicken thighs, olive oil, lime, cajun seasoning, courgette, bell pepper (42g P, 432 kcal)',
+      '- Sizzling Steak Omelette: eggs, 5% beef mince, olive oil, chives, mushrooms, chilli (47g P, 458 kcal)',
+      '- Sweet Chilli Beef: lean beef medallion, sweet chilli sauce, rice, peppers, onion (50g P, 463 kcal)',
+      '- Prawn Tikka Masala: prawns, passata, curry paste, courgette, basmati rice (45g P, 460 kcal)',
+      '- Easy Chicken Curry: chicken breast, curry paste, passata, onion, garlic, peppers, green beans, rice (45g P, 485 kcal)',
+      '- Mediterranean Chicken: chicken, olive oil, mediterranean veg, herbs, rice (40g P, 587 kcal)',
+      '- Moroccan Beef: beef, ras el hanout, chickpeas, rice (use rice not couscous) (47g P, 520 kcal)',
+      '- Teriyaki Salmon Stir Fry: salmon, garlic, tamari, red pepper, green beans, carrot, sesame seeds, rice (45g P, 597 kcal)',
+      '- Teriyaki Beef: lean beef, tamari, garlic, onion, broccoli, green beans, rice (use rice not noodles) (48g P, 518 kcal)',
+      '- Zingy Tuna: tinned tuna, light mayo, cucumber, chives, chilli, on rice or leaves (45g P, 412 kcal)',
+      '- Smoked Salmon & Egg: salmon, olive oil, eggs, chives, rocket (41g P, 454 kcal)',
+      '- Lentil & Roasted Veg: lentils, roasted veg, herbs, olive oil, EVOO (41g P, 592 kcal)',
+      '- Mushroom & Lentil Bolognese: lentils, mushrooms, passata, garlic, herbs, on rice (42g P, 480 kcal)',
+      '- Smoky One Pot Chicken: chicken, smoked paprika, chickpeas, tomatoes, peppers (40g P, 438 kcal)',
+      '- Batch Fish: white fish fillet, olive oil, herbs, roasted veg, rice (40g P, 432 kcal)',
+      '',
+      'Draw on these recipes for inspiration where relevant. Always adapt to remove banned ingredients. Note the recipe inspiration in the meal_name if used (e.g. "Cajun-spiced chicken bowl").',
+      '',
+      'FEEDING WINDOW: 10:00-19:00',
+      'DAILY PROTEIN TARGET: ~170g',
+      'THIS MEAL: ' + m.label + ' — ' + m.slot,
+      'PROTEIN TARGET THIS MEAL: ' + m.protein + 'g',
+      calCeiling ? 'CALORIE CEILING: Keep this meal strictly under ' + calCeiling + ' kcal. Reduce portion sizes or swap higher-fat ingredients to hit the target. Maintain the protein target.' : '',
+      snackLine,
+      '',
+      'CONTEXT:',
+      tNote,
+      trMap[state.training],
+      '',
+      'HARD EXCLUSIONS — never suggest these foods:',
+      'cow milk, casein, egg white, almond, soya, tofu, tempeh, gluten, wheat, barley, rye, spelt, gliadin, hazelnut, flax seed, cashew, pistachio, brazil nut, peanut, goat milk, sheep milk, bakers yeast, brewers yeast, white haricot beans, peas, sunflower seed, amaranth, mustard seed',
+      '',
+      'BORDERLINE — flag if used, use sparingly:',
+      'carp, corn, maize, malt, wheat bran, celery, cranberry, orange',
+      '',
+      'SAFE PROTEINS: salmon, sardines, mackerel, tuna, cod, haddock, trout, sea bream, shrimp, squid, octopus, chicken, turkey, beef, lamb (non-processed), egg yolk (safe, IgG score 15), buffalo mozzarella (buffalo milk is clear), coconut yoghurt',
+      'SAFE NUTS/SEEDS: walnut, pine nut, macadamia, coconut, sesame, tiger nut',
+      'SAFE GRAINS (gluten-free): quinoa, millet, buckwheat, oats, rice',
+      'SAFE LEGUMES: lentils, chickpeas, red kidney beans',
+      '',
+      'Mediterranean principles: extra virgin olive oil, diverse vegetables, herbs, omega-3 fish, polyphenols. No whey. No processed meats.',
+      '',
+      'IMPORTANT: Respond with ONLY a valid raw JSON object. No markdown. No backticks. No explanation. Start your response with { and end with }.',
+      '',
+      'JSON schema:',
+      '{"meal_name":"string","foods":[{"name":"string","qty":"string"}],"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"low_gi_carbs":["string"],"intolerance_flags":[{"food":"string","level":"elevated|borderline|clear","note":"string"}],"prep_note":"string"}'
+    ].join('\n');
+  }
+
+  function generateMeal(id, calCeiling) {
+    var btn = document.getElementById('btn-' + id);
+    var sk  = document.getElementById('sk-' + id);
+    var res = document.getElementById('res-' + id);
+    var err = document.getElementById('err-' + id);
+
+    btn.style.display = 'none';
+    err.style.display = 'none';
+    res.style.display = 'none';
+    sk.style.display  = 'flex';
+
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-5',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: buildPrompt(id, calCeiling) }]
+      })
+    })
+    .then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function (data) {
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      var blocks = data.content || [];
+      var raw = blocks.map(function (b) { return b.text || ''; }).join('').trim();
+      // Strip any accidental markdown fences
+      raw = raw.replace(/^```[a-z]*\n?/i, '').replace(/```$/,'').trim();
+      var meal = JSON.parse(raw);
+      state.totals[id] = { p: meal.protein_g, c: meal.carbs_g, f: meal.fat_g, kcal: meal.calories || Math.round(meal.protein_g * 4 + meal.carbs_g * 4 + meal.fat_g * 9) };
+      renderMeal(id, meal);
+      updateSummary();
+    })
+    .catch(function (e) {
+      sk.style.display  = 'none';
+      err.textContent   = 'Error: ' + e.message + '. Please try again.';
+      err.style.display = 'block';
+      btn.innerHTML     = '<i class="ti ti-refresh"></i>Retry';
+      btn.style.display = 'flex';
+    });
+  }
+
+  function renderMeal(id, meal) {
+    document.getElementById('sk-' + id).style.display = 'none';
+    var res = document.getElementById('res-' + id);
+
+    var warns = (meal.intolerance_flags || []).filter(function (f) {
+      return f.level === 'elevated' || f.level === 'borderline';
+    });
+    var gi = (meal.low_gi_carbs || []).filter(function (s) { return s && s.length; });
+
+    var rows = (meal.foods || []).map(function (f) {
+      return '<tr><td>' + esc(f.name) + '</td><td>' + esc(f.qty) + '</td></tr>';
+    }).join('');
+
+    var flagsHtml = '';
+    if (gi.length) {
+      flagsHtml += '<span class="flag fok"><i class="ti ti-check"></i>Low-GI: ' + gi.map(esc).join(', ') + '</span>';
+    }
+    warns.forEach(function (f) {
+      flagsHtml += '<span class="flag fwarn"><i class="ti ti-alert-triangle"></i>' + esc(f.food) + ': ' + esc(f.note) + '</span>';
+    });
+
+    res.innerHTML =
+      '<div class="res-name">' + esc(meal.meal_name) + '</div>' +
+      '<div class="mchips">' +
+        '<span class="mchip ck"><i class="ti ti-flame"></i> ' + Math.round(meal.calories || (meal.protein_g * 4 + meal.carbs_g * 4 + meal.fat_g * 9)) + ' kcal</span>' +
+        '<span class="mchip cp"><i class="ti ti-bolt"></i> ' + Math.round(meal.protein_g) + 'g protein</span>' +
+        '<span class="mchip cc">' + Math.round(meal.carbs_g) + 'g carbs</span>' +
+        '<span class="mchip cf">' + Math.round(meal.fat_g) + 'g fat</span>' +
+      '</div>' +
+      '<table class="ftable">' + rows + '</table>' +
+      (flagsHtml ? '<div class="flags">' + flagsHtml + '</div>' : '') +
+      (meal.prep_note ? '<div class="prep"><i class="ti ti-tools" style="margin-right:4px"></i>' + esc(meal.prep_note) + '</div>' : '') +
+      '<div class="act-row">' +
+        '<button class="act-btn" id="regen-' + id + '"><i class="ti ti-refresh"></i>Regenerate</button>' +
+        '<button class="act-btn act-btn-lower" id="lower-' + id + '" data-kcal="' + Math.round(meal.calories || (meal.protein_g * 4 + meal.carbs_g * 4 + meal.fat_g * 9)) + '"><i class="ti ti-trending-down"></i>Lower calories</button>' +
+      '</div>';
+
+    res.style.display = 'block';
+
+    document.getElementById('regen-' + id).addEventListener('click', function () {
+      res.style.display = 'none';
+      state.totals[id] = null;
+      updateSummary();
+      generateMeal(id);
+    });
+
+    document.getElementById('lower-' + id).addEventListener('click', function () {
+      var currentKcal = parseInt(this.getAttribute('data-kcal'), 10);
+      var ceiling = Math.round(currentKcal * 0.8);
+      res.style.display = 'none';
+      state.totals[id] = null;
+      updateSummary();
+      generateMeal(id, ceiling);
+    });
+  }
+
+  function updateSummary() {
+    var p = 0, c = 0, f = 0, kcal = 0;
+    ['m1','m2','m3','m4'].forEach(function (k) {
+      var t = state.totals[k];
+      if (t) { p += t.p; c += t.c; f += t.f; kcal += t.kcal; }
+    });
+    var pEl = document.getElementById('sv-p');
+    pEl.textContent = Math.round(p) + 'g';
+    pEl.style.color = p > 185 ? 'var(--red)' : 'var(--green)';
+    document.getElementById('sv-c').textContent = Math.round(c) + 'g';
+    document.getElementById('sv-f').textContent = Math.round(f) + 'g';
+    document.getElementById('sv-k').textContent = Math.round(kcal);
+    document.getElementById('bar-p').style.width = Math.min(100, Math.round((p / 170) * 100)) + '%';
+    document.getElementById('bar-c').style.width = Math.min(100, Math.round((c / 300) * 100)) + '%';
+    document.getElementById('bar-f').style.width = Math.min(100, Math.round((f / 100) * 100)) + '%';
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+})();
+</script>
+</body>
+</html>
